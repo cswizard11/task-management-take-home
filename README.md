@@ -198,6 +198,16 @@ Updates an existing task.
 
 Deletes a task.
 
+## What Was Cut for Time
+
+Within the 8-hour time constraint, the following features were intentionally de-prioritized to deliver a complete, working end-to-end system:
+
+- **Automated Testing:** Formal unit and integration tests were skipped in favor of manual testing across all user roles. The application was thoroughly tested manually to ensure RBAC logic, authentication flows, and hierarchy access controls work correctly. In a production scenario, comprehensive test suites for backend (Jest) and frontend (Jest/Karma) would be implemented as outlined in `APPROACH.md`.
+
+- **Audit Logging:** The `GET /audit-log` endpoint and audit event tracking were not implemented. A production system would include a dedicated `AuditService` with middleware to log all CRUD operations, user actions, and access attempts.
+
+For detailed reasoning behind these trade-offs, see `APPROACH.md`.
+
 ## Future Considerations
 
 - **Granular Permissions:** The current implementation uses direct role checks in the service layer for speed. A more scalable approach, as planned in `APPROACH.md`, would be to implement a granular permission system (e.g., `task:create:own`, `task:read:children`) with a `PermissionsGuard` and decorators. This would decouple the business logic from the permission definitions.
