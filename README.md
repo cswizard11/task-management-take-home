@@ -6,22 +6,10 @@ This project is a full-stack task management application built for a take-home c
 
 - **Authentication:** Secure JWT-based authentication.
 - **N-Level Organization Hierarchy:** Supports complex, multi-level organizational structures.
-- **Role-Based Access Control (RBAC):** Three distinct user roles (Admin, Owner, Viewer) with granular permissions.
-- **Hierarchical Permissions:** A user's access to tasks is determined by their role and their position within the organization hierarchy.
+- **Role-Based Access Control (RBAC):** Three distinct user roles (Admin, Owner, Viewer) with granular, hierarchy-aware permissions.
 - **Task Management:** Full CRUD (Create, Read, Update, Delete) functionality for tasks.
 - **Drag-and-Drop UI:** Users can update task statuses by dragging cards between columns.
-
-## Architecture
-
-This project is structured as an Nx monorepo to facilitate code sharing and maintain a clean separation of concerns between the frontend and backend.
-
-- `apps/api`: The NestJS backend application.
-- `apps/dashboard`: The Angular frontend application.
-- `libs/data`: A shared library containing DTOs, enums, and interfaces used by both the frontend and backend.
-
-### Architectural Decision: Frontend/Backend Code Separation
-
-A key architectural challenge was preventing backend-only dependencies (like `typeorm`) from being included in the frontend build. This was solved by creating a browser-safe entry point in the shared data library (`libs/data/src/browser.ts`). This file exports only the DTOs, enums, and plain interfaces needed by the frontend, ensuring a clean and stable build.
+- **Dockerized Environment:** A one-command `docker-compose up` setup for easy evaluation.
 
 ## Getting Started (Docker - Recommended)
 
@@ -29,12 +17,11 @@ The easiest way to run the entire application is with Docker Compose.
 
 ### Prerequisites
 
-- Docker
-- Docker Compose
+- Docker & Docker Compose
 
 ### 1. Environment Setup
 
-Before running the application, you need to create a `.env` file. You can do this by copying the example file:
+Create a `.env` file by copying the example:
 
 ```bash
 cp .env.example .env
@@ -47,58 +34,88 @@ You can customize the `DASHBOARD_PORT` in this file if needed.
 From the root of the project, run:
 
 ```bash
-docker-compose up --build
+docker-compose up
 ```
 
-This command will:
-
-- Build the production images for both the backend and frontend.
-- Start both services using the configuration from your `.env` file.
-- Automatically seed the database on the first run.
-
-Once the containers are running, you can access the application at **http://localhost:8080** (or the custom port you set in `.env`).
+This command builds the production images, starts both services, and automatically seeds the database. Once running, access the application at **http://localhost:8080** (or your custom port).
 
 ### 3. Shutting Down
 
-To stop the application, press `Ctrl+C` in the terminal, and then run:
+Press `Ctrl+C` in the terminal, and then run `docker-compose down` to clean up.
 
-```bash
-docker-compose down
-```
+## Test Users & Passwords
 
-This command will:
+You can log in with the following credentials to test the different permission levels:
 
-- Build the production images for both the backend and frontend.
-- Start both services.
-- Automatically seed the database on the first run.
+| Email                      | Password                 | Role   | Organization     |
+| -------------------------- | ------------------------ | ------ | ---------------- |
+| `admin@acme.com`           | `rootAdminPassword`      | ADMIN  | Acme Corporation |
+| `ceo@acme.com`             | `ceoPassword`            | OWNER  | Acme Corporation |
+| `eng.manager@acme.com`     | `engPassword`            | ADMIN  | Engineering      |
+| `dev@acme.com`             | `devPassword`            | OWNER  | Frontend Team    |
+| `sales.owner@acme.com`     | `salesOwnerPassword`     | OWNER  | Sales            |
+| `viewer@acme.com`          | `viewerPassword`         | VIEWER | Sales            |
+| `frontend.viewer@acme.com` | `frontendViewerPassword` | VIEWER | Frontend Team    |
 
-Once the containers are running, you can access the application at **[http://localhost:8080](http://localhost:8080)**.
+## Role Permissions Explained
 
-### 2. Shutting Down
+The application uses a hierarchical RBAC system where a user's access is determined by their role and their position in the organization tree.
 
-To stop the application, press `Ctrl+C` in the terminal, and then run:
+- **Viewer:**
 
-```bash
-docker-compose down
-```
+  - Can only view tasks within their **own** organization.
+  - Cannot create, update, or delete any tasks.
+
+- **Owner:**
+
+  - Can view tasks within their **own** organization and all **descendant** organizations.
+  - Can only create, update, or delete tasks within their **own** organization.
+
+- **Admin:**
+  - Can view tasks within their **own** organization and all **descendant** organizations.
+  - Can create, update, or delete tasks in their **own** organization and any **descendant** organization.
 
 ---
 
 ## Getting Started (Local Development)
 
-## Test Users
+### 1. Prerequisites
 
-You can log in with the following credentials (passwords are included in the seed script's console output):
+- Node.js (v24 or later recommended)
+- npm
 
-- **`admin@acme.com`** (Role: `ADMIN` at `Acme Corporation`) - Can see and modify all tasks.
-- **`ceo@acme.com`** (Role: `OWNER` at `Acme Corporation`) - Can see all tasks, but can only modify tasks in their own organization.
-- **`eng.manager@acme.com`** (Role: `ADMIN` at `Engineering`) - Can see and modify tasks in `Engineering` and `Frontend Team`.
-- **`dev@acme.com`** (Role: `OWNER` at `Frontend Team`) - Can see and modify tasks in `Frontend Team` only.
-- **`viewer@acme.com`** (Role: `VIEWER` at `Sales`) - Can only view tasks in the `Sales` organization.
+### 2. Installation & Setup
+
+```bash
+# Install dependencies
+npm install --legacy-peer-deps
+
+# Create .env file for the API
+cp apps/api/.env.example apps/api/.env
+
+# Seed the database
+npm run seed
+```
+
+### 3. Run the Application
+
+You will need two separate terminals.
+
+**Terminal 1: Start Backend API**
+
+```bash
+npx nx serve api
+```
+
+**Terminal 2: Start Frontend Dashboard**
+
+```bash
+npx nx serve dashboard
+```
+
+The frontend will be available at `http://localhost:4200`.
 
 ## API Endpoints
-
-All endpoints under `/api/tasks` are protected and require a valid JWT.
 
 - `POST /api/auth/login`: Authenticate and receive a JWT.
 - `GET /api/tasks`: Get all tasks accessible to the authenticated user.
