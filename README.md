@@ -1,6 +1,6 @@
 # Secure Task Management System
 
-This project is a full-stack task management application built for a take-home challenge. It features a NestJS backend with a sophisticated role-based access control (RBAC) system and a lightweight Angular frontend.
+This project is a full-stack task management application built for a take-home challenge. It features a NestJS backend with a sophisticated role-based access control (RBAC) system and a lightweight Angular frontend, all containerized with Docker for easy setup and evaluation.
 
 ## Core Features
 
@@ -43,9 +43,20 @@ This command builds the production images, starts both services, and automatical
 
 Press `Ctrl+C` in the terminal, and then run `docker-compose down` to clean up.
 
-## Test Users & Passwords
+## Test Users & Organization Structure
 
-You can log in with the following credentials to test the different permission levels:
+You can log in with the following credentials to test the different permission levels.
+
+### Seeded Organization Structure
+
+```
+Acme Corporation (Root)
+├── Engineering
+│   └── Frontend Team
+└── Sales
+```
+
+### User Accounts
 
 | Email                      | Password                 | Role   | Organization     |
 | -------------------------- | ------------------------ | ------ | ---------------- |
@@ -57,9 +68,56 @@ You can log in with the following credentials to test the different permission l
 | `viewer@acme.com`          | `viewerPassword`         | VIEWER | Sales            |
 | `frontend.viewer@acme.com` | `frontendViewerPassword` | VIEWER | Frontend Team    |
 
-## Role Permissions Explained
+---
 
-The application uses a hierarchical RBAC system where a user's access is determined by their role and their position in the organization tree.
+## Architecture Overview
+
+This project is structured as an **Nx monorepo** to facilitate code sharing and maintain a clean separation of concerns between the frontend and backend.
+
+- `apps/api`: The NestJS backend application.
+- `apps/dashboard`: The Angular frontend application.
+- `libs/data`: A shared library containing DTOs, enums, and interfaces.
+
+## Data Model
+
+The data model consists of three core entities: `User`, `Organization`, and `Task`.
+
+```mermaid
+erDiagram
+    USER {
+        int id PK
+        string email
+        string password
+        string role
+        int organizationId FK
+    }
+    ORGANIZATION {
+        int id PK
+        string name
+        int parentId FK
+    }
+    TASK {
+        int id PK
+        string title
+        string description
+        string status
+        int ownerId FK
+        int organizationId FK
+    }
+
+    USER }o--|| ORGANIZATION : "belongs to"
+    ORGANIZATION }o--o{ ORGANIZATION : "can have children"
+    TASK }o--|| USER : "is owned by"
+    TASK }o--|| ORGANIZATION : "belongs to"
+```
+
+- **Organization:** A self-referencing entity that allows for an N-level hierarchy.
+- **User:** Belongs to one `Organization` and has one `Role`.
+- **Task:** Belongs to one `Organization` and is owned by one `User`.
+
+## Access Control Implementation
+
+The application uses a hierarchical RBAC system where a user's access is determined by their role and their position in the organization tree. JWTs are used to manage authentication. When a user logs in, they receive a token containing their ID, email, role, and organization ID. This token is used to authenticate all subsequent API requests.
 
 - **Viewer:**
 
@@ -75,6 +133,78 @@ The application uses a hierarchical RBAC system where a user's access is determi
   - Can view tasks within their **own** organization and all **descendant** organizations.
   - Can create, update, or delete tasks in their **own** organization and any **descendant** organization.
 
+## API Documentation
+
+### `POST /api/auth/login`
+
+Authenticates a user and returns a JWT.
+
+- **Request Body:**
+  ```json
+  {
+    "email": "ceo@acme.com",
+    "password": "ceoPassword"
+  }
+  ```
+- **Response Body:**
+  ```json
+  {
+    "access_token": "ey..."
+  }
+  ```
+
+### `GET /api/tasks`
+
+Gets all tasks accessible to the authenticated user.
+
+- **Response Body:**
+  ```json
+  [
+    {
+      "id": 1,
+      "title": "Q4 Strategic Planning",
+      "description": "Plan company strategy for Q4",
+      "status": "in_progress",
+      "organization": { "id": 1, "name": "Acme Corporation" }
+    }
+  ]
+  ```
+
+### `POST /api/tasks`
+
+Creates a new task.
+
+- **Request Body:**
+  ```json
+  {
+    "title": "New Task Title",
+    "description": "A description for the new task."
+  }
+  ```
+
+### `PUT /api/tasks/:id`
+
+Updates an existing task.
+
+- **Request Body:**
+  ```json
+  {
+    "title": "Updated Task Title",
+    "status": "complete"
+  }
+  ```
+
+### `DELETE /api/tasks/:id`
+
+Deletes a task.
+
+## Future Considerations
+
+- **Granular Permissions:** The current implementation uses direct role checks in the service layer for speed. A more scalable approach, as planned in `APPROACH.md`, would be to implement a granular permission system (e.g., `task:create:own`, `task:read:children`) with a `PermissionsGuard` and decorators. This would decouple the business logic from the permission definitions.
+- **Security:** Implement JWT refresh tokens to improve security and user experience. Add CSRF protection, rate limiting, and security headers (e.g., with Helmet.js).
+- **Performance:** For larger-scale applications, the recursive hierarchy traversal in `OrgHierarchyService` could be optimized using a recursive CTE (Common Table Expression) in SQL or a materialized path pattern. Caching permission checks (e.g., with Redis) would also significantly improve performance.
+- **Advanced Features:** Introduce role delegation, temporary permissions, and task assignments to other users.
+
 ---
 
 ## Getting Started (Local Development)
@@ -87,13 +217,8 @@ The application uses a hierarchical RBAC system where a user's access is determi
 ### 2. Installation & Setup
 
 ```bash
-# Install dependencies
 npm install --legacy-peer-deps
-
-# Create .env file for the API
-cp apps/api/.env.example apps/api/.env
-
-# Seed the database
+cp .env.example .env
 npm run seed
 ```
 
@@ -114,11 +239,3 @@ npx nx serve dashboard
 ```
 
 The frontend will be available at `http://localhost:4200`.
-
-## API Endpoints
-
-- `POST /api/auth/login`: Authenticate and receive a JWT.
-- `GET /api/tasks`: Get all tasks accessible to the authenticated user.
-- `POST /api/tasks`: Create a new task.
-- `PUT /api/tasks/:id`: Update an existing task.
-- `DELETE /api/tasks/:id`: Delete a task.
