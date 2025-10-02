@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -11,6 +11,7 @@ import {
   Role,
   CreateTaskDto,
   UpdateTaskDto,
+  TaskStatus,
 } from '@task-management-take-home/data/browser';
 import { AuthService } from '../auth.service';
 import { TaskService } from '../task.service';
@@ -24,7 +25,6 @@ import { TaskService } from '../task.service';
 })
 export class TasksComponent {
   // --- Dependency Injection ---
-  // Consistently use inject() for all dependencies
   public authService = inject(AuthService);
   private taskService = inject(TaskService);
   private fb = inject(FormBuilder);
@@ -32,6 +32,20 @@ export class TasksComponent {
   // --- State Signals ---
   tasks = signal<Task[]>([]);
   editingTask = signal<Task | null>(null);
+
+  // --- Computed Signals for Columns ---
+  todoTasks = computed(() =>
+    this.tasks().filter((t) => t.status === TaskStatus.TODO)
+  );
+  inProgressTasks = computed(() =>
+    this.tasks().filter((t) => t.status === TaskStatus.IN_PROGRESS)
+  );
+  completeTasks = computed(() =>
+    this.tasks().filter((t) => t.status === TaskStatus.COMPLETE)
+  );
+
+  // --- Expose Enums to Template ---
+  TaskStatus = TaskStatus;
 
   // --- Form Definition ---
   taskForm: FormGroup = this.fb.group({
@@ -48,6 +62,29 @@ export class TasksComponent {
     this.taskService.getTasks().subscribe((data) => {
       this.tasks.set(data);
     });
+  }
+
+  // --- Drag and Drop Handlers ---
+  onDragStart(event: DragEvent, task: Task): void {
+    event.dataTransfer?.setData('text/plain', task.id.toString());
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault(); // Necessary to allow dropping
+  }
+
+  onDrop(event: DragEvent, newStatus: TaskStatus): void {
+    event.preventDefault();
+    const taskId = Number(event.dataTransfer?.getData('text/plain'));
+    const taskToMove = this.tasks().find((t) => t.id === taskId);
+
+    if (taskToMove && taskToMove.status !== newStatus) {
+      this.taskService
+        .updateTask(taskId, { status: newStatus })
+        .subscribe(() => {
+          this.loadTasks();
+        });
+    }
   }
 
   // --- UI Actions ---
