@@ -13,11 +13,11 @@ export class Organization {
   @Column({ nullable: true })
   parentId: number;
 
-  @ManyToOne(() => Organization, (org) => org.childern, { nullable: true })
+  @ManyToOne(() => Organization, (org) => org.children, { nullable: true })
   parent: Organization;
 
   @OneToMany(() => Organization, (org) => org.parent)
-  childern: Organization[];
+  children: Organization[];
 
   @OneToMany(() => User, (user) => user.organization)
   users: User[];
