@@ -344,6 +344,13 @@ Acme Corporation (Root)
 - Easy to inspect and debug
 - Can be replaced with PostgreSQL for production
 
+### Hierarchy Traversal Implementation
+
+- **Current approach:** Recursive method with N database queries (one per level)
+- **Trade-off:** Prioritized code clarity and correctness over performance for the challenge
+- **Production optimization:** Would use recursive CTEs, materialized paths, or closure tables for single-query traversal
+- **Justification:** With 4 test organizations and 3 levels, the performance difference is negligible, but the simpler code is easier to understand and maintain during the challenge timeframe
+
 ## Risk Mitigation
 
 1. **Time Management**

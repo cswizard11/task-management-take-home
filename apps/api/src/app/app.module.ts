@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User, Organization, Task } from '@task-management-take-home/data';
 import { AuthModule } from './auth/auth.module';
+import { OrgHierarchyModule } from './org-hierarchy/org-hierarchy.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthModule } from './auth/auth.module';
       logging: true,
     }),
     AuthModule,
+    OrgHierarchyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
