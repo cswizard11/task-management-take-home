@@ -1,63 +1,120 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Task } from '@task-management-take-home/data';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+  FormGroup,
+} from '@angular/forms';
+import {
+  Task,
+  Role,
+  CreateTaskDto,
+  UpdateTaskDto,
+} from '@task-management-take-home/data/browser';
 import { AuthService } from '../auth.service';
+import { TaskService } from '../task.service';
 
 @Component({
   selector: 'app-tasks',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="p-8">
-      <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold">Task Dashboard</h1>
-        <button
-          (click)="logout()"
-          class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Logout
-        </button>
-      </div>
-      <div
-        *ngIf="tasks().length > 0; else noTasks"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-      >
-        <div
-          *ngFor="let task of tasks()"
-          class="bg-white p-4 rounded-lg shadow-md"
-        >
-          <h3 class="font-bold text-lg">{{ task.title }}</h3>
-          <p class="text-gray-600">{{ task.description }}</p>
-          <div class="mt-2">
-            <span class="text-sm font-semibold">Status:</span> {{ task.status }}
-          </div>
-          <div class="text-sm">
-            <span class="font-semibold">Organization:</span>
-            {{ task.organization.name }}
-          </div>
-        </div>
-      </div>
-      <ng-template #noTasks>
-        <p>No tasks found.</p>
-      </ng-template>
-    </div>
-  `,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './tasks.component.html',
+  styleUrls: ['./tasks.component.css'],
 })
 export class TasksComponent {
-  private http = inject(HttpClient);
-  private authService = inject(AuthService);
-  tasks = signal<Task[]>([]);
+  // --- Dependency Injection ---
+  // Consistently use inject() for all dependencies
+  public authService = inject(AuthService);
+  private taskService = inject(TaskService);
+  private fb = inject(FormBuilder);
 
-  ngOnInit() {
-    this.http
-      .get<Task[]>('http://localhost:3000/api/tasks')
-      .subscribe((data: Task[]) => {
-        this.tasks.set(data);
-      });
+  // --- State Signals ---
+  tasks = signal<Task[]>([]);
+  editingTask = signal<Task | null>(null);
+
+  // --- Form Definition ---
+  taskForm: FormGroup = this.fb.group({
+    title: ['', Validators.required],
+    description: [''],
+  });
+
+  constructor() {
+    this.loadTasks();
   }
 
-  logout() {
+  // --- Data Loading ---
+  loadTasks(): void {
+    this.taskService.getTasks().subscribe((data) => {
+      this.tasks.set(data);
+    });
+  }
+
+  // --- UI Actions ---
+  startEdit(task: Task): void {
+    this.editingTask.set(task);
+    this.taskForm.setValue({
+      title: task.title,
+      description: task.description || '',
+    });
+  }
+
+  cancelEdit(): void {
+    this.editingTask.set(null);
+    this.taskForm.reset();
+  }
+
+  saveTask(): void {
+    if (this.taskForm.invalid) return;
+
+    const taskData = {
+      title: this.taskForm.value.title || '',
+      description: this.taskForm.value.description || '',
+    };
+
+    const currentTask = this.editingTask();
+
+    if (currentTask) {
+      this.taskService
+        .updateTask(currentTask.id, taskData as UpdateTaskDto)
+        .subscribe(() => this.onSaveSuccess());
+    } else {
+      this.taskService
+        .createTask(taskData as CreateTaskDto)
+        .subscribe(() => this.onSaveSuccess(true));
+    }
+  }
+
+  deleteTask(id: number): void {
+    if (confirm('Are you sure you want to delete this task?')) {
+      this.taskService.deleteTask(id).subscribe(() => this.loadTasks());
+    }
+  }
+
+  logout(): void {
     this.authService.logout();
+  }
+
+  // --- Permission Logic ---
+  canModify(task: Task): boolean {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    if (user.role === Role.ADMIN) return true;
+    if (
+      user.role === Role.OWNER &&
+      user.organizationId === task.organizationId
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  // --- Private Helpers ---
+  private onSaveSuccess(resetForm = false): void {
+    this.loadTasks();
+    this.cancelEdit();
+    if (resetForm) {
+      this.taskForm.reset();
+    }
   }
 }

@@ -353,6 +353,12 @@ Acme Corporation (Root)
 - **Production optimization:** Would use recursive CTEs, materialized paths, or closure tables for single-query traversal
 - **Justification:** With 4 test organizations and 3 levels, the performance difference is negligible, but the simpler code is easier to understand and maintain during the challenge timeframe
 
+### Frontend/Backend Code Separation
+
+- **Problem:** The initial setup caused the Angular frontend to import backend-only libraries (`typeorm`, `class-validator`) through the shared `libs/data` entities. This led to build warnings and application instability.
+- **Solution:** A separate, browser-safe entry point (`libs/data/src/browser.ts`) was created. This file exports only DTOs, enums, and plain interfaces, ensuring no backend code is ever included in the frontend build.
+- **Architecture:** The `tsconfig.base.json` was updated with a new path alias (`@task-management-take-home/data/browser`) for the frontend to use, while the backend continues to use the main `@task-management-take-home/data` import which includes the TypeORM entities. This enforces a clean separation of concerns.
+
 ## Risk Mitigation
 
 1. **Time Management**

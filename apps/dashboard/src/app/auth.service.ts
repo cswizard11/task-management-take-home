@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
-import { LoginDto, User, Role } from '@task-management-take-home/data';
+import { LoginDto, User, Role } from '@task-management-take-home/data/browser';
 
 interface DecodedToken {
   email: string;

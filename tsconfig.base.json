@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "paths": {
       "@task-management-take-home/auth": ["libs/auth/src/index.ts"],
-      "@task-management-take-home/data": ["libs/data/src/index.ts"]
+      "@task-management-take-home/data": ["libs/data/src/index.ts"],
+      "@task-management-take-home/data/browser": ["libs/data/src/browser.ts"]
     }
   }
 }

@@ -68,6 +68,29 @@ async function seed() {
   ).run('viewer@acme.com', viewerPassword, 'viewer', salesId);
   const salesViewerId = db.prepare('SELECT last_insert_rowid() as id').get().id;
 
+  const rootAdminPassword = await bcrypt.hash('rootAdminPassword', 10);
+  db.prepare(
+    'INSERT INTO user (email, password, role, organizationId) VALUES (?, ?, ?, ?)'
+  ).run('admin@acme.com', rootAdminPassword, 'admin', acmeCorpId);
+
+  const salesOwnerPassword = await bcrypt.hash('salesOwnerPassword', 10);
+  db.prepare(
+    'INSERT INTO user (email, password, role, organizationId) VALUES (?, ?, ?, ?)'
+  ).run('sales.owner@acme.com', salesOwnerPassword, 'owner', salesId);
+
+  const frontendViewerPassword = await bcrypt.hash(
+    'frontendViewerPassword',
+    10
+  );
+  db.prepare(
+    'INSERT INTO user (email, password, role, organizationId) VALUES (?, ?, ?, ?)'
+  ).run(
+    'frontend.viewer@acme.com',
+    frontendViewerPassword,
+    'viewer',
+    frontendId
+  );
+
   console.log('✅ Users created');
 
   // Create sample tasks
@@ -154,7 +177,16 @@ async function seed() {
     '   - dev@acme.com (OWNER at Frontend Team) - password: devPassword'
   );
   console.log(
-    '   - viewer@acme.com (VIEWER at Sales) - password: viewerPassword\n'
+    '   - viewer@acme.com (VIEWER at Sales) - password: viewerPassword'
+  );
+  console.log(
+    '   - admin@acme.com (ADMIN at Acme Corporation) - password: rootAdminPassword'
+  );
+  console.log(
+    '   - sales.owner@acme.com (OWNER at Sales) - password: salesOwnerPassword'
+  );
+  console.log(
+    '   - frontend.viewer@acme.com (VIEWER at Frontend Team) - password: frontendViewerPassword\n'
   );
 
   db.close();
