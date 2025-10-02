@@ -234,6 +234,7 @@ Acme Corporation (Root)
    - `GET /audit-log` - View access logs (Admin/Owner only)
 
 4. **Audit Logging**
+   - **Implementation Note:** This feature was skipped to prioritize the completion of the core CRUD and RBAC functionality within the time limit. In a full implementation, a dedicated `AuditService` and middleware would be created to log key events.
    - Console logging for create/update/delete operations
    - Log user, action, timestamp, and affected resource
 
@@ -267,6 +268,8 @@ Acme Corporation (Root)
 ### Phase 4: Testing & Polish (1 hour)
 
 **Priority: MEDIUM**
+
+**Implementation Note:** Formal unit and integration tests were de-prioritized to focus on delivering a complete end-to-end functional prototype. The application was manually tested across all user roles to ensure correctness. In a production scenario, the test cases outlined below would be implemented.
 
 1. **Backend Tests**
 
@@ -379,15 +382,3 @@ Acme Corporation (Root)
    - Manual testing throughout development
    - Focus tests on critical paths (auth, RBAC, hierarchy)
    - Ensure proper error messages and HTTP status codes
-
-## Future Enhancements
-
-These items demonstrate forward thinking and can be discussed in interviews:
-
-- **Security:** JWT refresh tokens, CSRF protection, rate limiting, helmet.js
-- **Performance:** Redis caching for hierarchy queries, materialized paths for faster lookups
-- **Features:** Role delegation, temporary permissions, task assignments, notifications
-- **Scalability:** PostgreSQL with connection pooling, horizontal scaling, CDN for frontend
-- **Observability:** Structured logging (Winston), error tracking (Sentry), metrics (Prometheus)
-- **Advanced Hierarchy:** Organization transfer, restructuring, soft deletes
-- **Audit:** Database-persisted audit trail with full history, compliance reporting
