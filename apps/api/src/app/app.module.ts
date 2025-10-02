@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { User, Organization, Task } from '@task-management-take-home/data';
 import { AuthModule } from './auth/auth.module';
 import { OrgHierarchyModule } from './org-hierarchy/org-hierarchy.module';
+import { TaskModule } from './task/task.module';
 
 @Module({
   imports: [
@@ -22,8 +23,9 @@ import { OrgHierarchyModule } from './org-hierarchy/org-hierarchy.module';
     }),
     AuthModule,
     OrgHierarchyModule,
+    TaskModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

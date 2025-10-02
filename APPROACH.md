@@ -83,6 +83,8 @@ Permissions are implemented as predefined constants mapped to roles, demonstrati
 - **Owner** inherits all Viewer permissions + adds write permissions for own org
 - **Admin** inherits all Owner permissions + extends write permissions to child orgs
 
+**Implementation Note:** Due to time constraints, the current backend implementation in `TaskService` uses direct role checks (e.g., `user.role === Role.VIEWER`) rather than the more granular `PermissionsGuard` and `@RequirePermissions` decorators. The detailed permission definitions and role-permission mapping below represent the _planned_, more flexible RBAC system that would be implemented in a full production scenario.
+
 ### Permission Definitions
 
 Permissions are granular and scope-aware:
