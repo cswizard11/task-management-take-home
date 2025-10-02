@@ -4,12 +4,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @task-management-take-home/task-management-take-home with Nx",
+      "name": "Debug API with Nx",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
         "nx",
         "serve",
-        "@task-management-take-home/task-management-take-home"
+        "api"
       ],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
@@ -21,7 +21,7 @@
       ],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/task-management-take-home/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/api/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     }

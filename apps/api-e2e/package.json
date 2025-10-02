@@ -1,10 +1,10 @@
 {
-  "name": "@task-management-take-home/task-management-take-home-e2e",
+  "name": "api-e2e",
   "version": "0.0.1",
   "private": true,
   "nx": {
     "implicitDependencies": [
-      "@task-management-take-home/task-management-take-home"
+      "api"
     ],
     "targets": {
       "e2e": {
@@ -13,12 +13,12 @@
           "{projectRoot}/test-output/jest/coverage"
         ],
         "options": {
-          "jestConfig": "apps/task-management-take-home-e2e/jest.config.ts",
+          "jestConfig": "apps/api-e2e/jest.config.ts",
           "passWithNoTests": true
         },
         "dependsOn": [
-          "@task-management-take-home/task-management-take-home:build",
-          "@task-management-take-home/task-management-take-home:serve"
+          "api:build",
+          "api:serve"
         ]
       }
     }
