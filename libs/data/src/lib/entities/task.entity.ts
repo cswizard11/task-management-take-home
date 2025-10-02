@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Organization } from './organization.entity';
 import { User } from './user.entity';
 import { TaskStatus } from '../enums/task-status.enum';
@@ -6,39 +13,39 @@ import { TaskStatus } from '../enums/task-status.enum';
 @Entity()
 export class Task {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column({ nullable: true })
-  description: string;
+  description!: string;
 
   @Column({
     type: 'simple-enum',
     enum: TaskStatus,
-    default: TaskStatus.TODO
+    default: TaskStatus.TODO,
   })
-  status: TaskStatus;
+  status!: TaskStatus;
 
   @Column({ nullable: true })
-  category: string;
+  category!: string;
 
   @Column()
-  ownerId: number;
+  ownerId!: number;
 
   @ManyToOne(() => User, (user) => user.tasks)
-  owner: User;
+  owner!: User;
 
   @Column()
-  organizationId: number;
+  organizationId!: number;
 
   @ManyToOne(() => Organization, (org) => org.tasks)
-  organization: Organization;
+  organization!: Organization;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
