@@ -4,8 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User, Organization, Task } from '@task-management-take-home/data';
-import { AuthModule } from './auth.module';
-import { AuthController } from './auth/auth.controller';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,7 +21,7 @@ import { AuthController } from './auth/auth.controller';
     }),
     AuthModule,
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
