@@ -23,63 +23,68 @@ This project is structured as an Nx monorepo to facilitate code sharing and main
 
 A key architectural challenge was preventing backend-only dependencies (like `typeorm`) from being included in the frontend build. This was solved by creating a browser-safe entry point in the shared data library (`libs/data/src/browser.ts`). This file exports only the DTOs, enums, and plain interfaces needed by the frontend, ensuring a clean and stable build.
 
-## Getting Started
+## Getting Started (Docker - Recommended)
+
+The easiest way to run the entire application is with Docker Compose.
 
 ### Prerequisites
 
-- Node.js (v18 or later recommended)
-- npm
+- Docker
+- Docker Compose
 
-### 1. Installation
+### 1. Environment Setup
 
-Clone the repository and install the dependencies:
-
-```bash
-git clone <repository-url>
-cd task-management-take-home
-npm install
-```
-
-### 2. Environment Setup
-
-Create a `.env` file in the `apps/api/` directory with the following content:
-
-```env
-JWT_SECRET=a-secure-secret-for-development
-DATABASE_PATH=./database.sqlite
-NODE_ENV=development
-PORT=3000
-```
-
-### 3. Seed the Database
-
-Run the seed script to populate the database with test data, including a pre-defined organization hierarchy and users with different roles:
+Before running the application, you need to create a `.env` file. You can do this by copying the example file:
 
 ```bash
-npm run seed
+cp .env.example .env
 ```
 
-This will create a `database.sqlite` file in the root of the project.
+You can customize the `DASHBOARD_PORT` in this file if needed.
 
-### 4. Run the Application
+### 2. Run the Application
 
-You will need two separate terminals to run the backend and frontend servers.
-
-**Terminal 1: Start the Backend API**
+From the root of the project, run:
 
 ```bash
-npx nx serve api
+docker-compose up --build
 ```
 
-The API will be running at `http://localhost:3000/api`.
+This command will:
 
-**Terminal 2: Start the Frontend Dashboard**
+- Build the production images for both the backend and frontend.
+- Start both services using the configuration from your `.env` file.
+- Automatically seed the database on the first run.
+
+Once the containers are running, you can access the application at **http://localhost:8080** (or the custom port you set in `.env`).
+
+### 3. Shutting Down
+
+To stop the application, press `Ctrl+C` in the terminal, and then run:
 
 ```bash
-npx nx serve dashboard
+docker-compose down
 ```
 
-The frontend will be running at `http://localhost:4200`.
+This command will:
+
+- Build the production images for both the backend and frontend.
+- Start both services.
+- Automatically seed the database on the first run.
+
+Once the containers are running, you can access the application at **[http://localhost:8080](http://localhost:8080)**.
+
+### 2. Shutting Down
+
+To stop the application, press `Ctrl+C` in the terminal, and then run:
+
+```bash
+docker-compose down
+```
+
+---
+
+## Getting Started (Local Development)
 
 ## Test Users
 

@@ -58,10 +58,7 @@ export class AuthService {
 
   login(credentials: LoginDto) {
     return this.http
-      .post<{ access_token: string }>(
-        'http://localhost:3000/api/auth/login',
-        credentials
-      )
+      .post<{ access_token: string }>('api/auth/login', credentials)
       .pipe(
         tap((response) => {
           localStorage.setItem(this.TOKEN_KEY, response.access_token);

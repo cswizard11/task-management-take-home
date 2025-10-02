@@ -6,11 +6,49 @@ async function seed() {
 
   console.log('✅ Database connection established');
 
+  // Create schema
+  console.log('📝 Creating database schema...');
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS organization (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      parentId INTEGER,
+      FOREIGN KEY (parentId) REFERENCES organization (id)
+    );
+
+    CREATE TABLE IF NOT EXISTS user (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      role TEXT NOT NULL,
+      organizationId INTEGER NOT NULL,
+      FOREIGN KEY (organizationId) REFERENCES organization (id)
+    );
+
+    CREATE TABLE IF NOT EXISTS task (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      status TEXT NOT NULL,
+      category TEXT,
+      ownerId INTEGER NOT NULL,
+      organizationId INTEGER NOT NULL,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL,
+      FOREIGN KEY (ownerId) REFERENCES user (id),
+      FOREIGN KEY (organizationId) REFERENCES organization (id)
+    );
+  `);
+  console.log('✅ Schema created');
+
   // Clear existing data
   console.log('🗑️  Clearing existing data...');
   db.prepare('DELETE FROM task').run();
   db.prepare('DELETE FROM user').run();
   db.prepare('DELETE FROM organization').run();
+  db.prepare(
+    "DELETE FROM sqlite_sequence WHERE name IN ('organization', 'user', 'task')"
+  ).run(); // Reset auto-increment
 
   // Create organization hierarchy
   console.log('🏢 Creating organization hierarchy...');

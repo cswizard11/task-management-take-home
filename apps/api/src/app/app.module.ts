@@ -18,8 +18,7 @@ import { TaskModule } from './task/task.module';
       type: 'better-sqlite3',
       database: process.env.DATABASE_PATH || './database.sqlite',
       entities: [User, Organization, Task],
-      synchronize: true,
-      logging: true,
+      synchronize: false, // Disabled for production-like setup
     }),
     AuthModule,
     OrgHierarchyModule,
